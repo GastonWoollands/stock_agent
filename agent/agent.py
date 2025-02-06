@@ -191,19 +191,58 @@ def message(qa: QA) -> rx.Component:
     )
 
 def chat() -> rx.Component:
+    """Chat siempre visible con la barra de entrada integrada."""
     return rx.vstack(
         rx.box(
             rx.foreach(State.chats[State.current_chat], message),
-            width="100%"
+            width="100%",
+            overflow_y="auto",
+            padding_bottom="2em",
+            flex="1",
         ),
-        py="8",
-        flex="1",
+        rx.form(
+            rx.hstack(
+                rx.input(
+                    placeholder="Ask about any stock...",
+                    id="question",
+                    width="100%",
+                    disabled=State.processing,
+                    border_color=rx.color("blue", 6),
+                    _focus={"border_color": rx.color("blue", 8)},
+                    background_color="transparent",
+                    padding="0.5em",
+                    border_radius="4px",
+                ),
+                rx.button(
+                    rx.cond(
+                        State.processing,
+                        loading_icon(height="1em"),
+                        rx.text("Send"),
+                    ),
+                    type_="submit",
+                    disabled=State.processing,
+                    bg=rx.color("green", 9),
+                    color="white",
+                    _hover={"bg": rx.color("green", 10)},
+                    border_radius="4px",
+                    padding="0.5em 1em",
+                ),
+                align_items="center",
+                spacing="1",
+            ),
+            on_submit=State.process_question,
+            width="100%",
+            reset_on_submit=True,
+        ),
+        spacing="3",
+        align_items="center",
         width="100%",
         max_width="50em",
-        padding_x="4px",
-        align_self="center",
+        max_height="60vh",
         overflow_y="auto",
-        padding_bottom="5em",
+        padding_x="4px",
+        py="8",
+        flex="1",
     )
 
 def action_bar() -> rx.Component:
@@ -311,9 +350,8 @@ def sidebar() -> rx.Component:
         **SIDEBAR_STYLE,
     )
 
-
 def index() -> rx.Component:
-    """The main app."""
+    """Página principal con el chat siempre abierto."""
     return rx.box(
         sidebar(),
         rx.box(
@@ -325,22 +363,29 @@ def index() -> rx.Component:
                         on_click=State.create_new_chat,
                         margin_left="auto",
                     ),
+                    rx.hstack(
+                        rx.color_mode.icon(),
+                        rx.color_mode.switch(),
+                        spacing="4",
+                        padding_top="4"
+                    ),
+                    width="75%",
+                    align='center'
                 ),
+                rx.spacer(),
                 chat(),
-                action_bar(),
                 spacing="4",
                 align_items="center",
-                height="100vh",
-                padding="4em",
             ),
             margin_left="300px",
             width="calc(100% - 300px)",
+            height="100vh",
+            padding="4em",
         ),
         width="100%",
         height="100vh",
         background_color=rx.color("mauve", 1),
     )
-
 
 app = rx.App()
 app.add_page(index)
